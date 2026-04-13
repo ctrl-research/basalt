@@ -133,7 +133,7 @@ func generateHTMLTemplate(title string, htmlContent string, sourcePath string, p
 	.search-result { display: block; padding: 10px 12px; border-radius: 4px; text-decoration: none; color: var(--text); }
 	.search-result:hover { background: var(--card-bg); }
 	.search-result-title { font-weight: 600; margin-bottom: 4px; color: var(--heading); }
-	.search-result-tags { margin-bottom: 4px; }
+	.search-result-tags { margin-bottom: 4px; display: flex; flex-wrap: wrap; gap: 6px; }
 	.search-result-snippet { font-size: 0.8em; color: var(--muted); line-height: 1.4; }
 	.search-result-snippet mark { background: rgba(255,220,50,0.3); color: inherit; border-radius: 2px; }
 	.search-empty { padding: 20px; text-align: center; color: var(--muted); font-size: 0.9em; }
