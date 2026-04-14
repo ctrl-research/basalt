@@ -36,9 +36,10 @@ func generateHTMLTemplate(title string, htmlContent string, sourcePath string, p
 			position: fixed; top: 0; left: 0; height: 100vh; width: 280px; z-index: 1000;
 			transform: translateX(-100%); transition: transform 0.25s ease;
 			box-shadow: 2px 0 8px rgba(0,0,0,0.3);
+			display: none;
 		}
-		.sidebar-nav.open { transform: translateX(0); }
-		.sidebar-nav.closed { transform: translateX(-100%); }
+		.sidebar-nav.open { transform: translateX(0); display: block; }
+		.sidebar-nav.closed { transform: translateX(-100%); display: none; }
 		.content-col { padding: 16px 20px; align-self: start; }
 		.sidebar-right { display: block; border-left: none; border-top: 1px solid var(--border); position: static; margin-top: 0; }
 		.sidebar-right .sidebar-section { margin-bottom: 8px; }
