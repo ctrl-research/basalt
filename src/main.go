@@ -56,7 +56,7 @@ type SiteConfig struct {
 // readConfig reads site configuration from .env and environment variables.
 // Environment variables (BASALT_SITE_NAME, BASALT_SITE_THEME) override .env file values.
 func readConfig() SiteConfig {
-	cfg := SiteConfig{SiteName: "Basalt", SiteTheme: "dark"}
+	cfg := SiteConfig{SiteName: "Basalt", SiteTheme: "dark", GraphNodeSizeByEdges: true}
 	for _, envPath := range []string{".env", "../.env", "../../.env"} {
 		if _, err := os.Stat(envPath); err == nil {
 			if data, err := os.ReadFile(envPath); err == nil {
