@@ -223,7 +223,7 @@ func generateHTMLTemplate(title string, htmlContent string, sourcePath string, p
         <span class="mobile-site-name">%[12]s</span>
     </div>
 <div class="layout">
-    <aside class="sidebar-nav">
+    <aside class="sidebar-nav closed">
         <div class="site-name">%[12]s</div>
         <div class="sidebar-header">
             <button id="close-nav" class="close-nav" aria-label="Close navigation">✕</button>
