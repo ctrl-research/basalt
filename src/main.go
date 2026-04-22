@@ -172,6 +172,9 @@ func run() error {
 	navTree := buildNavTree(SourceDir)
 	navTreeJSON, _ := json.Marshal(navTree)
 
+	// Build folder siblings map: for each folder index page, all other pages in that folder
+	folderSiblings := buildFolderSiblings(graph.Nodes)
+
 	parser := NewMarkdownParser()
 
 	// Walk the vault and generate HTML for each markdown file
@@ -205,7 +208,7 @@ func run() error {
 		}
 
 		// Build per-page graph data
-		pageGraph := buildPageGraph(pageID, linkTargets, linkHrefs, backlinksMap, existingPages, pageTitles, tags)
+		pageGraph := buildPageGraph(pageID, linkTargets, linkHrefs, backlinksMap, existingPages, pageTitles, folderSiblings, tags)
 		pageGraph.CurrentHref = pageID + ".html"
 		pageGraph.TableOfContents = extractTOC(htmlBody)
 		pageGraph.Date = date
@@ -254,10 +257,45 @@ func run() error {
 	return nil
 }
 
+// buildFolderSiblings builds a map: folder index pageID -> all sibling pageIDs in that folder (excl. index itself).
+// e.g. recipes/index -> [recipes/chicken, recipes/beef, ...]
+func buildFolderSiblings(nodes []GraphNode) map[string][]string {
+	// First pass: group pages by their folder
+	folderPages := make(map[string][]string) // folderDir -> [pageIDs]
+	for _, n := range nodes {
+		if n.Stub {
+			continue
+		}
+		dir := filepath.Dir(n.ID)
+		if dir == "." {
+			dir = ""
+		}
+		folderPages[dir] = append(folderPages[dir], n.ID)
+	}
+
+	// Second pass: for each folder with an index, siblings = all non-index pages in that folder
+	siblings := make(map[string][]string)
+	for _, pages := range folderPages {
+		var indexID string
+		var nonIndex []string
+		for _, p := range pages {
+			if toHTMLName(p) == "index" {
+				indexID = p
+			} else {
+				nonIndex = append(nonIndex, p)
+			}
+		}
+		if indexID != "" && len(nonIndex) > 0 {
+			siblings[indexID] = nonIndex
+		}
+	}
+	return siblings
+}
+
 // buildPageGraph builds the per-page graph data for a given page:
-// - Links: pages this page wiki-links to
+// - Links: pages this page wiki-links to (plus sibling folder pages for folder indexes)
 // - Backlinks: pages that link to this page
-func buildPageGraph(pageID string, linkTargets []string, linkHrefs []string, backlinksMap map[string][]string, existingPages map[string]bool, pageTitles map[string]string, tags []string) *PageGraph {
+func buildPageGraph(pageID string, linkTargets []string, linkHrefs []string, backlinksMap map[string][]string, existingPages map[string]bool, pageTitles map[string]string, folderSiblings map[string][]string, tags []string) *PageGraph {
 	pg := &PageGraph{Links: []GraphRef{}, Backlinks: []GraphRef{}, Tags: tags}
 
 	// Build Links — use linkHrefs (computed relative hrefs) not bare target paths
@@ -281,6 +319,21 @@ func buildPageGraph(pageID string, linkTargets []string, linkHrefs []string, bac
 			Href:  href,
 			Stub:  !existingPages[target],
 		})
+	}
+
+	// For folder index pages, add links to all sibling pages in the same folder
+	if sibs, ok := folderSiblings[pageID]; ok {
+		for _, sib := range sibs {
+			title := toHTMLName(sib)
+			if t, ok := pageTitles[sib]; ok && t != "" {
+				title = t
+			}
+			pg.Links = append(pg.Links, GraphRef{
+				Title: title,
+				Href:  computeRelHref(pageID, sib),
+				Stub:  false,
+			})
+		}
 	}
 
 	// Build Backlinks — compute relative hrefs from this page's directory
