@@ -20,8 +20,8 @@ func generateHTMLTemplate(title string, htmlContent string, sourcePath string, p
 	/* Google Fonts: Plex Serif for headings, Lilex for body */
 	@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap');
 
-	/* Dark mode (default) */
-	:root, [data-theme="dark"] { --bg: #1e1e1e; --text: #e0e0e0; --link: #6bb3d9; --sidebar-bg: #252525; --border: #3a3a3a; --heading: #ffffff; --muted: #888888; --card-bg: #2a2a2a; --graph-node: #999; }
+	/* Dark mode — deep black with subtle blue undertone */
+	:root, [data-theme="dark"] { --bg: #161a22; --text: #e0e0e0; --link: #6bb3d9; --sidebar-bg: #1a1f2a; --border: #2a3040; --heading: #ffffff; --muted: #888888; --card-bg: #1e2432; --graph-node: #999; }
 	/* Light mode */
 	[data-theme="light"] { --bg: #f8f8f8; --text: #333; --link: #2980b9; --sidebar-bg: #f0f0f0; --border: #e1e4e8; --heading: #1a1a1a; --muted: #888888; --card-bg: #ffffff; --graph-node: #ccc; }
 	* { box-sizing: border-box; }
