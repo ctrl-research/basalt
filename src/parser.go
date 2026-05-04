@@ -53,6 +53,7 @@ func (p *MarkdownParser) ProcessFile(filePath, sourceRelPath string) (title stri
 
 	htmlBody = processCallouts(htmlBody)
 	htmlBody = processCollapsibles(htmlBody)
+	htmlBody = processImageCaptions(htmlBody)
 
 	reLink := regexp.MustCompile(`\(([^)]*?\.md)\)`)
 	htmlBody = reLink.ReplaceAll(htmlBody, []byte("($1html)"))
@@ -359,6 +360,25 @@ func processCallouts(htmlBody []byte) []byte {
 		result = result[:info.fullStart] + replacement + result[info.fullEnd:]
 	}
 	return []byte(result)
+}
+
+func processImageCaptions(htmlBody []byte) []byte {
+	re := regexp.MustCompile(`<img([^>]*)alt="([^"]*)"([^>]*)>`)
+	return re.ReplaceAllFunc(htmlBody, func(match []byte) []byte {
+		parts := re.FindSubmatch(match)
+		if len(parts) < 4 {
+			return match
+		}
+		alt := string(parts[2])
+		if alt == "" {
+			return match
+		}
+		// Reconstruct the img tag, preserving all attributes
+		beforeAlt := string(parts[1])
+		afterAlt := string(parts[3])
+		imgTag := fmt.Sprintf("<img%salt="%s"%s>", beforeAlt, alt, afterAlt)
+		return []byte(fmt.Sprintf(`<figure class="image-caption">%s<figcaption>%s</figcaption></figure>`, imgTag, alt))
+	})
 }
 
 // processCollapsibles converts :::details blocks to <details>/<summary> elements.
