@@ -15,6 +15,7 @@ func generateHTMLTemplate(title string, htmlContent string, sourcePath string, p
 	tagsHTML := buildTagsHTML(pageGraph)
 	tocHTML := buildTocHTML(pageGraph)
 	siteNameJS, _ := json.Marshal(siteCfg.SiteName)
+	graphModeJS, _ := json.Marshal(siteCfg.GraphMode)
 
 	css := `
 	/* Google Fonts: Libre Baskerville for headings and site name, Lilex for body */
@@ -292,6 +293,7 @@ window.siteName = %[14]s;
         });
     }
 window.siteTheme = "%[13]s";
+window.graphMode = %[15]s;
 window.pageGraphData = %[10]s;
 window.navTree = %[11]s;
 </script>
@@ -518,7 +520,7 @@ window.navTree = %[11]s;
         var segs = window.pageGraphData.currentHref.split('/').filter(Boolean);
         var depth = Math.max(0, segs.length - 1);
         var base = depth > 0 ? '../'.repeat(depth) : '';
-        var graphPath = base + 'graph/index.html';
+        var graphPath = base + 'graph/' + (window.graphMode === 'nebula' ? 'nebula.html' : 'index.html');
         var iframe = document.getElementById('graph-iframe');
         iframe.src = graphPath;
         iframe.style.display = 'block';
@@ -645,7 +647,7 @@ window.navTree = %[11]s;
 </script>
 </body>
 </html>`,
-		title, css, title,
+	title, css, title,
 		pageGraph.ReadingTime,
 		pageGraph.Date,
 		htmlContent,
@@ -653,7 +655,7 @@ window.navTree = %[11]s;
 		tagsHTML,
 		tocHTML,
 		string(pageGraphJSON), navTreeJSON,
-		siteCfg.SiteName, siteCfg.SiteTheme, string(siteNameJS))
+		siteCfg.SiteName, siteCfg.SiteTheme, string(siteNameJS), string(graphModeJS))
 }
 
 // buildBacklinksHTML renders Links and Backlinks for the sidebar
