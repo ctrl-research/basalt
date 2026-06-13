@@ -890,7 +890,7 @@ func writeFullGraphViewer(graphDir string, graphJSON []byte, siteTheme string, s
             link.classed("dimmed", false);
             link.classed("connected", false);
         })
-        .on("click", function(event, d) { if (!d.stub) { sim.stop(); graph.nodes.forEach(function(n) { n.fx = n.x; n.fy = n.y; }); window.location.href = "../" + d.path; } });
+        .on("click", function(event, d) { if (!d.stub) { sim.stop(); graph.nodes.forEach(function(n) { n.fx = n.x; n.fy = n.y; }); var _t = new URL("../" + d.path, window.location.href).href; if (window.top !== window.self) { window.top.location.href = _t; } else { window.location.href = _t; } } });
     var nodeRadius = %t;
     node.append("circle").attr("r", function(d) {
         if (nodeRadius) {
@@ -1919,7 +1919,8 @@ func writeFullGraphViewerNebula(graphDir string, graphJSON []byte, siteTheme str
             }
 
             if (d.stub || !d.path) return;
-            window.location.href = '../' + d.path;
+            var _t = new URL('../' + d.path, window.location.href).href;
+            if (window.top !== window.self) { window.top.location.href = _t; } else { window.location.href = _t; }
         });
 
         // ---- Search ----
