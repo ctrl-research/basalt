@@ -1414,26 +1414,38 @@ func writeFullGraphViewerNebula(graphDir string, graphJSON []byte, siteTheme str
         }
 
         // ---- Layered starfield (depth + size variety + twinkle) ----
-        function makeStarLayer(count, spread, size, opacity, tint) {
+        function makeStarLayer(count, minR, maxR, size, opacity, tint) {
             var geo = new THREE.BufferGeometry();
             var pos = new Float32Array(count * 3);
-            for (var i = 0; i < count * 3; i++) pos[i] = (Math.random() - 0.5) * spread;
+            for (var i = 0; i < count; i++) {
+                // Random direction on the unit sphere, then a radius in [minR, maxR] —
+                // a hollow shell so stars sit out in the surrounding space, never inside
+                // the node/cloud region where they'd crowd or be mistaken for nodes.
+                var dx = Math.random() - 0.5, dy = Math.random() - 0.5, dz = Math.random() - 0.5;
+                var dl = Math.sqrt(dx * dx + dy * dy + dz * dz) || 1;
+                var r = minR + Math.random() * (maxR - minR);
+                pos[i * 3]     = dx / dl * r;
+                pos[i * 3 + 1] = dy / dl * r;
+                pos[i * 3 + 2] = dz / dl * r;
+            }
             geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
             var mat = new THREE.PointsMaterial({
                 color: tint, size: size, opacity: opacity,
-                transparent: true, sizeAttenuation: true,
+                // Screen-space sizing: stars stay small dots no matter how close the
+                // camera gets, so none ever balloon into a square or read as a node.
+                transparent: true, sizeAttenuation: false,
                 blending: THREE.AdditiveBlending, depthWrite: false
             });
             var pts = new THREE.Points(geo, mat);
             scene.add(pts);
             return mat;
         }
-        // Three depth layers, each twinkling at its own rate/phase: distant blue dust,
-        // a white mid-field, and a few large warm foreground stars.
+        // Two depth layers in hollow shells well beyond the graph, each twinkling at its
+        // own rate/phase: a white mid-field and a distant blue dust. No close foreground
+        // layer — those were the stars that blew up near the camera.
         var starLayers = [
-            { mat: makeStarLayer(1200, 2600, 1.2, 0.35, 0x99aaff), base: 0.35, speed: 0.7, amp: 0.10, phase: 0.0 },
-            { mat: makeStarLayer(700, 1900, 2.2, 0.55, 0xffffff), base: 0.55, speed: 1.1, amp: 0.15, phase: 1.7 },
-            { mat: makeStarLayer(250, 1500, 3.6, 0.75, 0xfff2d0), base: 0.75, speed: 1.7, amp: 0.20, phase: 3.1 }
+            { mat: makeStarLayer(900, 700, 1300, 2.0, 0.55, 0xffffff), base: 0.55, speed: 1.1, amp: 0.15, phase: 1.7 },
+            { mat: makeStarLayer(1300, 1300, 2200, 1.4, 0.35, 0x99aaff), base: 0.35, speed: 0.7, amp: 0.10, phase: 0.0 }
         ];
 
         // ---- Node meshes ----
